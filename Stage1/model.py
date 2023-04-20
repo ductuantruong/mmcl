@@ -12,10 +12,12 @@ class model(nn.Module):
     def __init__(self, lr, lr_decay, **kwargs):
         super(model, self).__init__()
         self.Network = ECAPA_TDNN().cuda() # Speaker encoder
-        self.Loss = LossFunction().cuda() # Contrastive loss
+        self.Loss = MMCL_inv().cuda() # Contrastive loss
+        # self.Loss = LossFunction().cuda() # Contrastive loss
         self.AATNet  = AATNet().cuda() # AAT, which is used to improve the performace
         self.Reverse = Reverse().cuda() # AAT
-        self.OptimNet = torch.optim.Adam(list(self.Network.parameters()) + list(self.Loss.parameters()), lr = lr)
+        self.OptimNet = torch.optim.Adam(self.Network.parameters(), lr = lr)
+        # self.OptimNet = torch.optim.Adam(list(self.Network.parameters()) + list(self.Loss.parameters()), lr = lr)
         self.OptimAAT = torch.optim.Adam(self.AATNet.parameters(), lr = lr)
         self.Scheduler = torch.optim.lr_scheduler.StepLR(self.OptimNet, step_size = 5, gamma=lr_decay)
         print("Model para number = %.2f"%(sum(param.numel() for param in self.Network.parameters()) / 1024 / 1024))
